@@ -1,90 +1,51 @@
 /**
- * QR MENU PRO - CHART TYPE ERROR FIX SCRIPT
- * Amaç: admin/SalesChart.tsx dosyasındaki Recharts Tooltip formatter tip hatasını gidermek.
- * Çalıştırmak için: node fix_chart.js
+ * QR MENU PRO - VERCEL BUILD FIX SCRIPT
+ * Amaç: Vercel üzerinde Prisma Client hatasını çözmek için package.json scriptlerini günceller.
+ * Çalıştırmak için: node setup_vercel.js
  */
 
 const fs = require("fs");
 const path = require("path");
 
-function writeFile(filePath, content) {
+const packageJsonPath = path.join(process.cwd(), "package.json");
+
+function updatePackageJson() {
   try {
-    const absolutePath = path.join(process.cwd(), filePath);
-    const dirname = path.dirname(absolutePath);
-    if (!fs.existsSync(dirname)) {
-      fs.mkdirSync(dirname, { recursive: true });
+    // 1. Dosya var mı kontrol et
+    if (!fs.existsSync(packageJsonPath)) {
+      console.error(
+        "❌ HATA: package.json dosyası bulunamadı! Lütfen ana dizinde olduğunuzdan emin olun."
+      );
+      process.exit(1);
     }
-    fs.writeFileSync(absolutePath, content.trim());
-    console.log(`✅ Düzeltildi: ${filePath}`);
-  } catch (err) {
-    console.error(`❌ Hata (${filePath}):`, err);
+
+    console.log("📦 package.json okunuyor...");
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+
+    // 2. Mevcut scriptleri yedekle ve güncelle
+    console.log("⚙️  Scriptler güncelleniyor...");
+
+    // Eski build komutunu korumaya gerek yok, Vercel için standart olanı yazıyoruz
+    packageJson.scripts = {
+      ...packageJson.scripts,
+      postinstall: "prisma generate", // Bağımlılıklar yüklenince çalışır
+      build: "prisma generate && next build", // Derleme sırasında çalışır
+    };
+
+    // 3. Dosyayı kaydet
+    fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+
+    console.log("\n✅ İŞLEM BAŞARILI!");
+    console.log("--------------------------------------------------");
+    console.log('1. "package.json" dosyanız Vercel için yapılandırıldı.');
+    console.log("2. Şimdi bu değişikliği Git'e gönderin:");
+    console.log("   git add package.json");
+    console.log('   git commit -m "Fix Vercel build scripts"');
+    console.log("   git push");
+    console.log("--------------------------------------------------");
+  } catch (error) {
+    console.error("❌ BEKLENMEYEN HATA:", error.message);
   }
 }
 
-const salesChartContent = `
-'use client';
-
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-interface SalesChartProps {
-  data: { name: string; sales: number }[];
-}
-
-export default function SalesChart({ data }: SalesChartProps) {
-  if (!data || data.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-full text-gray-400">
-        Veri yok
-      </div>
-    );
-  }
-
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <AreaChart
-        data={data}
-        margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-      >
-        <defs>
-          <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#FF6B00" stopOpacity={0.8}/>
-            <stop offset="95%" stopColor="#FF6B00" stopOpacity={0}/>
-          </linearGradient>
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-        <XAxis
-          dataKey="name"
-          axisLine={false}
-          tickLine={false}
-          tick={{fill: '#9CA3AF', fontSize: 12}}
-          dy={10}
-        />
-        <YAxis
-          axisLine={false}
-          tickLine={false}
-          tick={{fill: '#9CA3AF', fontSize: 12}}
-          tickFormatter={(value) => \`₺\${value}\`}
-        />
-        <Tooltip
-          contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
-          formatter={(value: any) => [\`₺\${value}\`, 'Satış']}
-        />
-        <Area
-          type="monotone"
-          dataKey="sales"
-          stroke="#FF6B00"
-          strokeWidth={3}
-          fillOpacity={1}
-          fill="url(#colorSales)"
-        />
-      </AreaChart>
-    </ResponsiveContainer>
-  );
-}
-`;
-
-console.log("🚀 Grafik Bileşeni Düzeltmesi Başlatılıyor...");
-writeFile("src/components/admin/SalesChart.tsx", salesChartContent);
-console.log(
-  "🎉 İşlem tamamlandı. Şimdi 'npm run build' komutunu tekrar çalıştırabilirsiniz."
-);
+updatePackageJson();
