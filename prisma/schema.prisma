@@ -7,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// KULLANICI (Admin Girişi İçin)
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -17,7 +16,6 @@ model User {
   createdAt DateTime @default(now())
 }
 
-// KATEGORİ (Menü Başlıkları)
 model Category {
   id        String    @id @default(cuid())
   name_tr   String
@@ -27,7 +25,6 @@ model Category {
   createdAt DateTime  @default(now())
 }
 
-// ÜRÜN (Yemekler/İçecekler)
 model Product {
   id          String   @id @default(cuid())
   name_tr     String
@@ -40,22 +37,44 @@ model Product {
   categoryId  String
   category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
+  orderItems  OrderItem[]
 }
 
-// MASA (QR Kodlar İçin)
 model Table {
   id        String   @id @default(cuid())
-  qrCode    String?  // Base64 QR Image Data
+  qrCode    String?
   number    Int
   requests  ServiceRequest[]
+  orders    Order[]
 }
 
-// GARSON ÇAĞIRMA İSTEKLERİ
 model ServiceRequest {
   id        String   @id @default(cuid())
   tableId   String
   table     Table    @relation(fields: [tableId], references: [id])
-  type      String   // 'WAITER', 'BILL'
-  status    String   @default("PENDING") // 'PENDING', 'COMPLETED'
+  type      String
+  status    String   @default("PENDING")
   createdAt DateTime @default(now())
+}
+
+// YENİ EKLENENLER: SİPARİŞ SİSTEMİ
+model Order {
+  id        String      @id @default(cuid())
+  tableId   String
+  table     Table       @relation(fields: [tableId], references: [id])
+  items     OrderItem[]
+  status    String      @default("PENDING") // PENDING, PREPARING, READY, COMPLETED
+  total     Decimal
+  note      String?
+  createdAt DateTime    @default(now())
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Decimal // Sipariş anındaki fiyatı saklamak önemli
 }

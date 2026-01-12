@@ -73,7 +73,7 @@ export default async function TablesPage() {
 
                   {/* QR Kod Alanı */}
                   <div className="relative w-32 h-32 p-1 mb-3 bg-white border rounded-lg">
-                    {table.qrCode ? (
+                    {table.qrCode && table.qrCode !== "pending" ? (
                       <Image
                         src={table.qrCode}
                         alt={`Masa ${table.number} QR`}
@@ -81,7 +81,9 @@ export default async function TablesPage() {
                         className="object-contain"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gray-100 rounded animate-pulse" />
+                      <div className="flex items-center justify-center w-full h-full text-xs text-gray-400 bg-gray-100 rounded animate-pulse">
+                        QR Bekleniyor...
+                      </div>
                     )}
                   </div>
 

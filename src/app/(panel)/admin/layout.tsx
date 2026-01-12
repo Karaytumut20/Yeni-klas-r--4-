@@ -10,7 +10,8 @@ import {
   Menu,
   Coffee,
   ChevronRight,
-  Settings
+  Settings,
+  ShoppingBag
 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -19,6 +20,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const menuItems = [
     { name: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
+    { name: 'Siparişler', icon: ShoppingBag, href: '/admin/orders' }, // YENİ
     { name: 'Kategoriler', icon: Coffee, href: '/admin/categories' },
     { name: 'Ürünler', icon: UtensilsCrossed, href: '/admin/products' },
     { name: 'Masalar & QR', icon: QrCode, href: '/admin/tables' },
@@ -33,16 +35,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           ${isSidebarOpen ? 'w-64' : 'w-20'}
           lg:relative`}
       >
-        {/* Logo Area */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-800">
+        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-800">
           {isSidebarOpen ? (
-            <span className="font-bold text-xl tracking-wider text-primary">QR MASTER</span>
+            <span className="text-xl font-bold tracking-wider text-primary">QR MASTER</span>
           ) : (
-            <span className="font-bold text-xl mx-auto text-primary">Q</span>
+            <span className="mx-auto text-xl font-bold text-primary">Q</span>
           )}
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -58,11 +58,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               >
                 <div className="relative">
                   <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                  {isActive && <div className="absolute -right-1 -top-1 w-2 h-2 bg-white rounded-full" />}
+                  {/* Siparişlerde bildirim noktası (Simüle) */}
+                  {item.href === '/admin/orders' && <div className="absolute -right-1 -top-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#1A1A1A]" />}
                 </div>
 
                 {isSidebarOpen && (
-                  <span className="font-medium flex-1">{item.name}</span>
+                  <span className="flex-1 font-medium">{item.name}</span>
                 )}
 
                 {isSidebarOpen && isActive && <ChevronRight size={16} />}
@@ -71,7 +72,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           })}
         </nav>
 
-        {/* Footer Actions */}
         <div className="p-4 border-t border-gray-800">
            <button
              onClick={() => window.location.href = '/api/auth/signout'}
@@ -84,29 +84,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top Header */}
-        <header className="bg-white shadow-sm h-16 flex items-center justify-between px-6 z-10">
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+        <header className="z-10 flex items-center justify-between h-16 px-6 bg-white shadow-sm">
           <button
             onClick={() => setSidebarOpen(!isSidebarOpen)}
-            className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition"
+            className="p-2 text-gray-600 transition rounded-lg hover:bg-gray-100"
           >
             <Menu size={24} />
           </button>
 
           <div className="flex items-center gap-4">
-             <div className="text-right hidden md:block">
+             <div className="hidden text-right md:block">
                 <p className="text-sm font-bold text-gray-800">Admin</p>
                 <p className="text-xs text-gray-500">Süper Yönetici</p>
              </div>
-             <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold border-2 border-primary/20">
+             <div className="flex items-center justify-center w-10 h-10 font-bold border-2 rounded-full bg-primary/10 text-primary border-primary/20">
                A
              </div>
           </div>
         </header>
 
-        {/* Page Content */}
         <main className="flex-1 overflow-auto bg-gray-50">
           {children}
         </main>

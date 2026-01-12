@@ -1,95 +1,99 @@
+import { getDashboardStats, getSalesChartData } from '@/app/actions/analytics';
 import PageHeader from '@/components/admin/PageHeader';
 import StatCard from '@/components/admin/StatCard';
+import SalesChart from '@/components/admin/SalesChart'; // Yeni bileşen
 import { Users, DollarSign, ShoppingBag, Activity, TrendingUp } from 'lucide-react';
 
-export default function AdminDashboard() {
+// Her girişte veriyi tazele
+export const revalidate = 0;
+
+export default async function AdminDashboard() {
+  const stats = await getDashboardStats();
+  const chartData = await getSalesChartData();
+
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 mx-auto max-w-7xl">
       <PageHeader
         title="Genel Bakış"
-        subtitle="Restoranınızın anlık durumunu buradan takip edebilirsiniz."
+        subtitle="Restoranınızın canlı performans raporu."
       >
-        <button className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50">
-          Rapor İndir
-        </button>
+        <div className="flex items-center gap-2 px-3 py-1 text-xs font-bold text-green-700 bg-green-100 rounded-full">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          CANLI
+        </div>
       </PageHeader>
 
       {/* İstatistik Kartları */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Toplam Gelir"
-          value="₺124,500"
+          value={`₺${stats.revenue.toFixed(0)}`}
           icon={DollarSign}
           trend="+12%"
           color="success"
         />
         <StatCard
           title="Toplam Sipariş"
-          value="1,245"
+          value={stats.orders}
           icon={ShoppingBag}
           trend="+5%"
           color="primary"
         />
         <StatCard
           title="Aktif Masalar"
-          value="12/20"
+          value={stats.activeTables}
           icon={Users}
           color="warning"
         />
         <StatCard
-          title="Günlük Ziyaret"
-          value="854"
+          title="Günlük Sipariş"
+          value={stats.dailyOrders}
           icon={Activity}
-          trend="+18%"
+          trend="Bugün"
           color="secondary"
         />
       </div>
 
       {/* Alt Bölümler (Grid) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
 
-        {/* Sol Geniş Alan: Son Siparişler vb. */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        {/* Sol Geniş Alan: Grafik */}
+        <div className="p-6 bg-white border border-gray-100 shadow-sm lg:col-span-2 rounded-xl">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="font-bold text-gray-800 flex items-center gap-2">
+            <h3 className="flex items-center gap-2 font-bold text-gray-800">
               <TrendingUp size={20} className="text-primary" />
-              Satış Grafiği
+              Haftalık Satış Grafiği
             </h3>
-            <select className="text-sm border-none bg-gray-50 rounded-md px-2 py-1 text-gray-600 focus:ring-0">
-              <option>Bu Hafta</option>
-              <option>Bu Ay</option>
-            </select>
           </div>
 
-          <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg border border-dashed border-gray-200">
-            <p className="text-gray-400 text-sm">Grafik Bileşeni Faz 9'da eklenecek</p>
+          <div className="w-full h-72">
+            <SalesChart data={chartData} />
           </div>
         </div>
 
-        {/* Sağ Dar Alan: Hızlı İşlemler / Uyarılar */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-          <h3 className="font-bold text-gray-800 mb-4">Hızlı Durum</h3>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-100">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-red-700">Bekleyen Garson Çağrısı</span>
+        {/* Sağ Dar Alan: Sistem Durumu */}
+        <div className="flex flex-col justify-between p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
+          <div>
+            <h3 className="mb-4 font-bold text-gray-800">Sistem Özeti</h3>
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg bg-gray-50">
+                <p className="mb-1 text-xs font-bold text-gray-500 uppercase">En Çok Satan</p>
+                <p className="font-bold text-gray-800">Veriler toplanıyor...</p>
               </div>
-              <span className="font-bold text-red-700">3</span>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100">
-              <span className="text-sm font-medium text-blue-700">Açık Siparişler</span>
-              <span className="font-bold text-blue-700">8</span>
+              <div className="p-4 rounded-lg bg-gray-50">
+                <p className="mb-1 text-xs font-bold text-gray-500 uppercase">Ortalama Sepet</p>
+                <p className="font-bold text-gray-800">
+                  {stats.orders > 0 ? `₺${(stats.revenue / stats.orders).toFixed(0)}` : '0₺'}
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="mt-8 pt-6 border-t">
-            <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">Sistem Durumu</h4>
-            <div className="flex items-center gap-2 text-sm text-green-600">
+          <div className="pt-6 mt-8 border-t">
+            <h4 className="mb-3 text-xs font-bold text-gray-400 uppercase">Veritabanı</h4>
+            <div className="flex items-center gap-2 p-2 text-sm text-green-600 rounded-lg bg-green-50">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              Veritabanı Bağlı
+              Bağlantı Kararlı
             </div>
           </div>
         </div>
