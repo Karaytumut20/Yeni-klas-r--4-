@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// KULLANICI (Admin Girişi İçin)
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("ADMIN")
+  createdAt DateTime @default(now())
+}
+
+// KATEGORİ (Menü Başlıkları)
+model Category {
+  id        String    @id @default(cuid())
+  name_tr   String
+  name_en   String
+  image     String?
+  products  Product[]
+  createdAt DateTime  @default(now())
+}
+
+// ÜRÜN (Yemekler/İçecekler)
+model Product {
+  id          String   @id @default(cuid())
+  name_tr     String
+  name_en     String
+  desc_tr     String?
+  desc_en     String?
+  price       Decimal
+  image       String?
+  isAvailable Boolean  @default(true)
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+// MASA (QR Kodlar İçin)
+model Table {
+  id        String   @id @default(cuid())
+  qrCode    String?  // Base64 QR Image Data
+  number    Int
+  requests  ServiceRequest[]
+}
+
+// GARSON ÇAĞIRMA İSTEKLERİ
+model ServiceRequest {
+  id        String   @id @default(cuid())
+  tableId   String
+  table     Table    @relation(fields: [tableId], references: [id])
+  type      String   // 'WAITER', 'BILL'
+  status    String   @default("PENDING") // 'PENDING', 'COMPLETED'
+  createdAt DateTime @default(now())
+}
