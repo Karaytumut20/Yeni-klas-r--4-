@@ -37,13 +37,17 @@ export default async function MenuPage({ params: { locale }, searchParams }: Pro
 
   return (
     <CartProvider>
-      <main className="relative max-w-md min-h-screen pb-24 mx-auto overflow-hidden shadow-2xl bg-surface">
-        <header className="sticky top-0 z-40 flex items-center justify-between px-6 py-4 shadow-sm bg-white/80 backdrop-blur-md">
-          <div>
-            <h1 className="text-xl font-black tracking-tight text-gray-800">QR MENU</h1>
+      <main className="relative max-w-md min-h-screen mx-auto overflow-x-hidden shadow-2xl bg-surface">
+
+        {/* Modern Header */}
+        <header className="sticky top-0 z-40 flex items-center justify-between px-6 py-4 glass">
+          <div className="flex flex-col">
+            <h1 className="text-xl font-black tracking-tighter text-gray-900">
+              QR<span className="text-primary">MENU</span>
+            </h1>
             {tableName && (
-              <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-md">
-                {tableName}
+              <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full w-fit mt-0.5">
+                📍 {tableName}
               </span>
             )}
           </div>
@@ -59,7 +63,6 @@ export default async function MenuPage({ params: { locale }, searchParams }: Pro
           <WaiterButton tableId={searchParams.tableId} />
         )}
 
-        {/* Sepet Bileşeni */}
         <CartSheet locale={locale} />
 
       </main>
