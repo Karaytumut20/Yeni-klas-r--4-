@@ -1,8 +1,7 @@
 /**
- * QR MENU PRO - TYPE ERROR FIX SCRIPT
- * Amaç: NextAuth 'role' özelliği için eksik olan TypeScript tanımlarını eklemek.
- * Bu script 'src/types/next-auth.d.ts' dosyasını oluşturur.
- * Çalıştırmak için: node fix_types.js
+ * QR MENU PRO - CHART TYPE ERROR FIX SCRIPT
+ * Amaç: admin/SalesChart.tsx dosyasındaki Recharts Tooltip formatter tip hatasını gidermek.
+ * Çalıştırmak için: node fix_chart.js
  */
 
 const fs = require("fs");
@@ -12,54 +11,80 @@ function writeFile(filePath, content) {
   try {
     const absolutePath = path.join(process.cwd(), filePath);
     const dirname = path.dirname(absolutePath);
-
-    // Klasör yoksa oluştur
     if (!fs.existsSync(dirname)) {
       fs.mkdirSync(dirname, { recursive: true });
     }
-
     fs.writeFileSync(absolutePath, content.trim());
-    console.log(`✅ Oluşturuldu: ${filePath}`);
+    console.log(`✅ Düzeltildi: ${filePath}`);
   } catch (err) {
     console.error(`❌ Hata (${filePath}):`, err);
   }
 }
 
-const nextAuthTypesContent = `
-import { DefaultSession } from "next-auth"
-import { JWT } from "next-auth/jwt"
+const salesChartContent = `
+'use client';
 
-declare module "next-auth" {
-  /**
-   * Session (Oturum) nesnesini genişletiyoruz
-   */
-  interface Session {
-    user: {
-      id: string
-      role?: string
-    } & DefaultSession["user"]
-  }
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-  /**
-   * User (Kullanıcı) nesnesini genişletiyoruz
-   */
-  interface User {
-    role?: string
-  }
+interface SalesChartProps {
+  data: { name: string; sales: number }[];
 }
 
-declare module "next-auth/jwt" {
-  /**
-   * JWT token nesnesini genişletiyoruz
-   */
-  interface JWT {
-    role?: string
+export default function SalesChart({ data }: SalesChartProps) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full text-gray-400">
+        Veri yok
+      </div>
+    );
   }
+
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart
+        data={data}
+        margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+      >
+        <defs>
+          <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#FF6B00" stopOpacity={0.8}/>
+            <stop offset="95%" stopColor="#FF6B00" stopOpacity={0}/>
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+        <XAxis
+          dataKey="name"
+          axisLine={false}
+          tickLine={false}
+          tick={{fill: '#9CA3AF', fontSize: 12}}
+          dy={10}
+        />
+        <YAxis
+          axisLine={false}
+          tickLine={false}
+          tick={{fill: '#9CA3AF', fontSize: 12}}
+          tickFormatter={(value) => \`₺\${value}\`}
+        />
+        <Tooltip
+          contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
+          formatter={(value: any) => [\`₺\${value}\`, 'Satış']}
+        />
+        <Area
+          type="monotone"
+          dataKey="sales"
+          stroke="#FF6B00"
+          strokeWidth={3}
+          fillOpacity={1}
+          fill="url(#colorSales)"
+        />
+      </AreaChart>
+    </ResponsiveContainer>
+  );
 }
 `;
 
-console.log("🚀 NextAuth Tip Tanımları Düzeltmesi Başlatılıyor...");
-writeFile("src/types/next-auth.d.ts", nextAuthTypesContent);
+console.log("🚀 Grafik Bileşeni Düzeltmesi Başlatılıyor...");
+writeFile("src/components/admin/SalesChart.tsx", salesChartContent);
 console.log(
   "🎉 İşlem tamamlandı. Şimdi 'npm run build' komutunu tekrar çalıştırabilirsiniz."
 );
