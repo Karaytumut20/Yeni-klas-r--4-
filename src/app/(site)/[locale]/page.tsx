@@ -4,7 +4,6 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import WaiterButton from '@/components/WaiterButton';
 import MenuContainer from './MenuContainer';
 import { CartProvider } from '@/context/CartContext';
-import CartSheet from '@/components/menu/CartSheet';
 
 const prisma = new PrismaClient();
 
@@ -27,6 +26,7 @@ export default async function MenuPage({ params: { locale }, searchParams }: Pro
     if (table) tableName = `Masa ${table.number}`;
   }
 
+  // Veri serileştirme
   const serializedCategories = categories.map(cat => ({
     ...cat,
     products: cat.products.map(prod => ({
@@ -37,21 +37,30 @@ export default async function MenuPage({ params: { locale }, searchParams }: Pro
 
   return (
     <CartProvider>
-      <main className="relative max-w-md min-h-screen mx-auto overflow-x-hidden shadow-2xl bg-surface">
+      <main className="min-h-screen pb-24 bg-gray-50 lg:pb-0">
+        {/* pb-24 mobilde sepet butonu altında içerik kalmasın diye */}
 
-        {/* Modern Header */}
-        <header className="sticky top-0 z-40 flex items-center justify-between px-6 py-4 glass">
-          <div className="flex flex-col">
-            <h1 className="text-xl font-black tracking-tighter text-gray-900">
-              QR<span className="text-primary">MENU</span>
-            </h1>
-            {tableName && (
-              <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full w-fit mt-0.5">
-                📍 {tableName}
-              </span>
-            )}
+        {/* Navbar */}
+        <header className="sticky top-0 z-40 w-full border-b border-gray-200 glass-panel">
+          <div className="flex items-center justify-between h-16 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-[#FF6B00] rounded-lg flex items-center justify-center text-white font-black text-lg">
+                Q
+              </div>
+              <h1 className="hidden text-xl font-black tracking-tight text-gray-900 sm:block">
+                QR<span className="text-[#FF6B00]">MENU</span>
+              </h1>
+              {tableName && (
+                <span className="px-3 py-1 ml-2 text-xs font-bold text-gray-600 bg-gray-100 border border-gray-200 rounded-full">
+                  📍 {tableName}
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3">
+              <LanguageSwitcher />
+            </div>
           </div>
-          <LanguageSwitcher />
         </header>
 
         <MenuContainer
@@ -62,8 +71,6 @@ export default async function MenuPage({ params: { locale }, searchParams }: Pro
         {searchParams.tableId && (
           <WaiterButton tableId={searchParams.tableId} />
         )}
-
-        <CartSheet locale={locale} />
 
       </main>
     </CartProvider>
