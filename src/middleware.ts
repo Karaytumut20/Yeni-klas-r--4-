@@ -1,14 +1,14 @@
 import { withAuth } from "next-auth/middleware";
-import createMiddleware from 'next-intl/middleware';
+import createMiddleware from "next-intl/middleware";
 import { NextRequest, NextResponse } from "next/server";
 
 const intlMiddleware = createMiddleware({
-  locales: ['en', 'tr'],
-  defaultLocale: 'tr'
+  locales: ["en", "tr"],
+  defaultLocale: "tr",
 });
 
 const authMiddleware = withAuth(
-  // onSuccess: Giriş başarılıysa ne olsun?
+  // onSuccess: Giriş başarılıysa ne olsun
   function onSuccess(req) {
     // Admin rotası için dil yönlendirmesi (intlMiddleware) YAPMA.
     // Çünkü /admin rotası [locale] klasörünün dışında, globaldir.
@@ -17,17 +17,19 @@ const authMiddleware = withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token }) => token != null
+      authorized: ({ token }) => token != null,
     },
     pages: {
-      signIn: '/auth/login'
-    }
+      signIn: "/auth/login",
+    },
   }
 );
 
 export default function middleware(req: NextRequest) {
   // Admin ve API rotalarını koru
-  const isAuthRoute = req.nextUrl.pathname.startsWith('/admin') || req.nextUrl.pathname.startsWith('/api/admin');
+  const isAuthRoute =
+    req.nextUrl.pathname.startsWith("/admin") ||
+    req.nextUrl.pathname.startsWith("/api/admin");
 
   if (isAuthRoute) {
     return (authMiddleware as any)(req);
@@ -38,5 +40,5 @@ export default function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/(tr|en)/:path*', '/admin/:path*', '/api/admin/:path*']
+  matcher: ["/", "/(tr|en)/:path*", "/admin/:path*", "/api/admin/:path*"],
 };
