@@ -1,6 +1,6 @@
 import { withAuth } from "next-auth/middleware";
 import createMiddleware from 'next-intl/middleware';
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const intlMiddleware = createMiddleware({
   locales: ['en', 'tr'],
@@ -8,8 +8,12 @@ const intlMiddleware = createMiddleware({
 });
 
 const authMiddleware = withAuth(
+  // onSuccess: Giriş başarılıysa ne olsun?
   function onSuccess(req) {
-    return intlMiddleware(req);
+    // Admin rotası için dil yönlendirmesi (intlMiddleware) YAPMA.
+    // Çünkü /admin rotası [locale] klasörünün dışında, globaldir.
+    // Direkt olarak sayfaya gitmesine izin ver.
+    return NextResponse.next();
   },
   {
     callbacks: {
@@ -29,7 +33,7 @@ export default function middleware(req: NextRequest) {
     return (authMiddleware as any)(req);
   }
 
-  // Diğer tüm rotalarda sadece dil çevirisi yap
+  // Diğer tüm rotalarda (Müşteri ekranı vb.) dil çevirisi yap
   return intlMiddleware(req);
 }
 
