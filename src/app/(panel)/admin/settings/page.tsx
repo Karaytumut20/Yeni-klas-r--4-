@@ -10,11 +10,18 @@ export default async function SettingsPage() {
     where: { email: "admin@menu.com" }
   });
 
+  // Wrapper function to fix TypeScript error (Promise<void> return type match)
+  async function handleUpdate(formData: FormData) {
+    "use server";
+    await updateProfile(formData);
+  }
+
   return (
     <div className="max-w-4xl p-6 mx-auto">
       <PageHeader title="Ayarlar" subtitle="Yönetici profilinizi düzenleyin." />
       <div className="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-xl">
-        <form action={updateProfile} className="p-6 space-y-6">
+        {/* action prop'una wrapper fonksiyon verildi */}
+        <form action={handleUpdate} className="p-6 space-y-6">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
               <label className="block mb-1 text-sm font-medium text-gray-700">Yönetici Adı</label>
